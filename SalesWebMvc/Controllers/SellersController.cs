@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using SalesWebMvc.Services;
 using SalesWebMvc.Models;
+using SalesWebMvc.Models.ViewModels;
 
 namespace SalesWebMvc.Controllers
 {
@@ -12,9 +13,11 @@ namespace SalesWebMvc.Controllers
     {
         // injecao de dependencia
         private readonly SellerServices _sellerService;
-        public SellersController(SellerServices sellerServices)
+        private readonly DepartmentService _departmentService;
+        public SellersController(SellerServices sellerServices, DepartmentService departmentService)
         {
             _sellerService = sellerServices;
+            _departmentService = departmentService;
         }
         public IActionResult Index()
         {
@@ -26,7 +29,11 @@ namespace SalesWebMvc.Controllers
         // ação para adicionar item
         public IActionResult Create()
         {
-            return View();
+            var departments = _departmentService.FindAll();
+            var viewModel = new SellerFormViewModel { Departments = departments };
+
+            // a tela quando for acionada pela primeira vez ja ira receber os departamentos
+            return View(viewModel);
         }
 
         // Ação "creat" receber post de um form
