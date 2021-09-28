@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace SalesWebMvc.Services
 {
@@ -35,10 +36,14 @@ namespace SalesWebMvc.Services
 
         // Busca no banco de dados atraves de um Id;
         public Seller FindById(int id)
-        {
-            return _context.Seller.FirstOrDefault(obj => obj.Id == id);
+        {   // antes
+            //return _context.Seller.FirstOrDefault(obj => obj.Id == id);   => antes
+
+            // depois    incluir Id na visualização (join de tabelas)
+            return _context.Seller.Include(obj => obj.Department).FirstOrDefault(obj => obj.Id == id);
+
         }
-        
+
         // metodo para deletar (DELETE) no banco de dados
         public void Remove(int id)
         {
