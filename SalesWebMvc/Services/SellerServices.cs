@@ -10,7 +10,6 @@ namespace SalesWebMvc.Services
     public class SellerServices
     {
         private readonly SalesWebMvcContext _context;
-
         // adicionar dependencia
         public SellerServices(SalesWebMvcContext context)
         {
@@ -24,6 +23,11 @@ namespace SalesWebMvc.Services
             return _context.Seller.ToList();
         }
 
-
+        // metodo para inserir no banco de dados
+        public void Insert(Seller obj)
+        {
+            _context.Add(obj);
+            _context.SaveChanges();
+        }
     }
 }
