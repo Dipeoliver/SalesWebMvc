@@ -12,6 +12,11 @@ namespace SalesWebMvc.Models
         public DateTime BirthDate { get; set; }
         public double BaseSalary { get; set; }
         public Department Department { get; set; }
+
+        // para guardar na classe tb o departamento ID ao adicionar seller(banco relacional)
+        public int DepartmentId { get; set; }
+
+
         public ICollection<SalesRecord> Sales{ get; set; } = new List<SalesRecord>();
 
         public Seller() { }
