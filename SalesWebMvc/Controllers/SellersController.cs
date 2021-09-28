@@ -26,6 +26,8 @@ namespace SalesWebMvc.Controllers
             return View(list); // passa valores para a view
         }
 
+
+
         // ação para adicionar item
         public IActionResult Create()
         {
@@ -35,6 +37,8 @@ namespace SalesWebMvc.Controllers
             // a tela quando for acionada pela primeira vez ja ira receber os departamentos
             return View(viewModel);
         }
+
+
 
         // Ação "creat" receber post de um form
         [HttpPost] // dizer que e post
@@ -46,5 +50,33 @@ namespace SalesWebMvc.Controllers
             // redirecionar para a index
             return RedirectToAction(nameof(Index));
         }
+
+
+        // abrir a tela para confirmação de deletar (GET).
+        public IActionResult Delete(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var obj = _sellerService.FindById(id.Value);
+            if (obj == null)
+            {
+                return NotFound();
+            }
+            return View(obj);
+        }
+
+        // Ação para deletar o item (POST)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Delete(int id)
+        {
+
+            _sellerService.Remove(id);
+            return RedirectToAction(nameof(Index));
+        }
+
     }
 }

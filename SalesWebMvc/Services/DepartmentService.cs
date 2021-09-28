@@ -9,15 +9,12 @@ namespace SalesWebMvc.Services
 {
     public class DepartmentService
     {
-
-
         private readonly SalesWebMvcContext _context;
         // adicionar dependencia
         public DepartmentService(SalesWebMvcContext context)
         {
             _context = context;
         }
-
         public List<Department> FindAll()
         {
             // retornar os departamentos ordenados
