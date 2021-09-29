@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using SalesWebMvc.Services.Exceptions;
 
 namespace SalesWebMvc.Services
 {
@@ -50,6 +51,28 @@ namespace SalesWebMvc.Services
             var obj = _context.Seller.Find(id);
             _context.Seller.Remove(obj);
             _context.SaveChanges();
+        }
+
+
+        // metodo de atualizar (UPDATE) no banco
+        public async Task UpdateAsync(Seller obj)
+        {
+            bool hasAny = await _context.Seller.AnyAsync(x => x.Id == obj.Id);
+            if (!hasAny)
+            {
+                throw new NotFoundException("Id not found");
+            }
+            try
+            {
+                _context.Update(obj);
+                await _context.SaveChangesAsync();
+            }
+            // exceção de nivel de banco (DbUpdateConcurrencyException)
+            catch (DbUpdateConcurrencyException e)
+            {
+                // exceção de nivel de camada (DbConcurrencyException)
+                throw new DbConcurrencyException(e.Message);
+            }
         }
     }
 }

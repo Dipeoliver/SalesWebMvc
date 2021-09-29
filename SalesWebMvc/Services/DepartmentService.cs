@@ -20,5 +20,10 @@ namespace SalesWebMvc.Services
             // retornar os departamentos ordenados
             return _context.Department.OrderBy(x => x.Name).ToList();
         }
+
+        internal Task<List<Department>> FindAllAsync()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
