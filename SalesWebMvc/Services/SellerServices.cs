@@ -21,36 +21,42 @@ namespace SalesWebMvc.Services
 
         // operacao retornar lista (SELECT) com todos vendedores
         // operação sincrona
-        public List<Seller> FindAll()
+        public async Task<List<Seller>> FindAllAsync()
         {
-            return _context.Seller.ToList();
+            return await _context.Seller.ToListAsync();
         }
 
 
 
         // metodo para inserir (INSERT) no banco de dados
-        public void Insert(Seller obj)
+        public async Task InsertAsync(Seller obj)
         {
             _context.Add(obj);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
         // Busca no banco de dados atraves de um Id;
-        public Seller FindById(int id)
-        {   // antes
-            //return _context.Seller.FirstOrDefault(obj => obj.Id == id);   => antes
+        public async Task<Seller> FindByIdAsync(int id)
+        {  // antes
+           //return _context.Seller.FirstOrDefault(obj => obj.Id == id);   => antes
 
             // depois    incluir Id na visualização (join de tabelas)
-            return _context.Seller.Include(obj => obj.Department).FirstOrDefault(obj => obj.Id == id);
-
+            return await _context.Seller.Include(obj => obj.Department).FirstOrDefaultAsync(obj => obj.Id == id);
         }
 
         // metodo para deletar (DELETE) no banco de dados
-        public void Remove(int id)
+        public async Task RemoveAsync(int id)
         {
-            var obj = _context.Seller.Find(id);
-            _context.Seller.Remove(obj);
-            _context.SaveChanges();
+            try
+            {
+                var obj = await _context.Seller.FindAsync(id);
+                _context.Seller.Remove(obj);
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException e)
+            {
+                throw new IntegrityException("Can't delete seller because he/she has sales");
+            }
         }
 
 

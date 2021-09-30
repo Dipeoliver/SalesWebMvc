@@ -7,6 +7,7 @@ using SalesWebMvc.Services;
 using SalesWebMvc.Models;
 using SalesWebMvc.Models.ViewModels;
 using System.Diagnostics;
+using SalesWebMvc.Services.Exceptions;
 
 namespace SalesWebMvc.Controllers
 {
@@ -20,19 +21,19 @@ namespace SalesWebMvc.Controllers
             _sellerService = sellerServices;
             _departmentService = departmentService;
         }
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             // operação para chamar a lista FindAll
-            var list = _sellerService.FindAll(); // vai me retornar uma lista de sellers
+            var list = await _sellerService.FindAllAsync(); // vai me retornar uma lista de sellers
             return View(list); // passa valores para a view
         }
 
 
 
         // ação para adicionar item
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            var departments = _departmentService.FindAll();
+            var departments = await _departmentService.FindAllAsync();
             var viewModel = new SellerFormViewModel { Departments = departments };
 
             // a tela quando for acionada pela primeira vez ja ira receber os departamentos
@@ -44,108 +45,114 @@ namespace SalesWebMvc.Controllers
         // Ação "creat" receber post de um form
         [HttpPost] // dizer que e post
         [ValidateAntiForgeryToken] // prevenção contra ataques
-        public IActionResult Create(Seller seller)
+        public async Task<IActionResult> Create(Seller seller)
         {
             if (!ModelState.IsValid)
             {
-                var departments =  _departmentService.FindAll();
+                var departments = await _departmentService.FindAllAsync();
                 var viewModel = new SellerFormViewModel { Seller = seller, Departments = departments };
                 return View(viewModel);
             }
 
             // passar para o service o seller
-            _sellerService.Insert(seller);
+            await _sellerService.InsertAsync(seller);
             // redirecionar para a index
             return RedirectToAction(nameof(Index));
         }
 
 
         // abrir a tela para confirmação de deletar (GET).
-        public IActionResult Delete(int? id)
+        public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
             {
-                return RedirectToAction(nameof(Error),new { message = "Id Not provided"});
+                return RedirectToAction(nameof(Error), new { message = "Id not provided" });
             }
 
-            var obj = _sellerService.FindById(id.Value);
+            var obj = await _sellerService.FindByIdAsync(id.Value);
             if (obj == null)
             {
-                return RedirectToAction(nameof(Error), new { message = "Id Not Found" });
-
+                return RedirectToAction(nameof(Error), new { message = "Id not found" });
             }
+
             return View(obj);
         }
 
         // Ação para deletar o item (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-
-            _sellerService.Remove(id);
-            return RedirectToAction(nameof(Index));
+            try
+            {
+                await _sellerService.RemoveAsync(id);
+                return RedirectToAction(nameof(Index));
+            }
+            catch (IntegrityException e)
+            {
+                return RedirectToAction(nameof(Error), new { message = e.Message });
+            }
         }
 
 
         // exibir os detalhes de um item
-        public  IActionResult Details(int? id)
+        public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
             {
-                return RedirectToAction(nameof(Error), new { message = "Id Not Found" });
+                return RedirectToAction(nameof(Error), new { message = "Id not provided" });
             }
 
-            var obj = _sellerService.FindById(id.Value);
+            var obj = await _sellerService.FindByIdAsync(id.Value);
             if (obj == null)
             {
-                return RedirectToAction(nameof(Error), new { message = "Id Not Found" });
+                return RedirectToAction(nameof(Error), new { message = "Id not found" });
             }
+
             return View(obj);
         }
 
-
         // açao de editar (abrir a tela para editar)
-        public IActionResult Edit(int? id)
+        public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
             {
-                return RedirectToAction(nameof(Error), new { message = "Id Not Found" });
+                return RedirectToAction(nameof(Error), new { message = "Id not provided" });
             }
 
-            var obj =  _sellerService.FindById(id.Value);
+            var obj = await _sellerService.FindByIdAsync(id.Value);
             if (obj == null)
             {
-                return RedirectToAction(nameof(Error), new { message = "Id Not Found" });
+                return RedirectToAction(nameof(Error), new { message = "Id not found" });
             }
 
-            List<Department> departments =  _departmentService.FindAll();
+            List<Department> departments = await _departmentService.FindAllAsync();
             SellerFormViewModel viewModel = new SellerFormViewModel { Seller = obj, Departments = departments };
             return View(viewModel);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public  IActionResult Edit(int id, Seller seller)
+        public async Task<IActionResult> Edit(int id, Seller seller)
         {
             if (!ModelState.IsValid)
             {
-                var departments = _departmentService.FindAll();
+                var departments = await _departmentService.FindAllAsync();
                 var viewModel = new SellerFormViewModel { Seller = seller, Departments = departments };
                 return View(viewModel);
             }
             if (id != seller.Id)
             {
-                return RedirectToAction(nameof(Error), new { message = "Id Not Found" });
+                return RedirectToAction(nameof(Error), new { message = "Id mismatch" });
             }
             try
             {
-                _ = _sellerService.UpdateAsync(seller);
+                await _sellerService.UpdateAsync(seller);
                 return RedirectToAction(nameof(Index));
             }
             catch (ApplicationException e)
             {
-                return RedirectToAction(nameof(Error), new { message = "Id Not Found" });
+                return RedirectToAction(nameof(Error), new { message = e.Message });
             }
         }
 
